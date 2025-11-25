@@ -5,9 +5,9 @@
 
 void execute(const char_t* path, const char_t* arg) {
 	if (arg != NULL) {
-		execl(path, path, arg, (char*)NULL);
+		execl(path, "app", arg, (char*)NULL);
 	} else {
-		execl(path, path, (char*)NULL);
+		execl(path, "app", (char*)NULL);
 	}
 }
 
