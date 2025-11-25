@@ -34,7 +34,7 @@ jobs:
           tag=$(gh release list --limit 1 | grep -v 'Latest' | awk '{print $1}')
           echo "::set-output name=tag::${tag}"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
       - name: Create Release Tag
         id: create_tag
@@ -56,7 +56,7 @@ jobs:
           fromTag: ${{steps.previous_tag.outputs.tag}}
           toTag: ${{inputs.version}}
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{secrets.GH_SECRET}}
 
       - name: Create Release
         id: release
@@ -65,4 +65,4 @@ jobs:
           files: mo2installer-${{inputs.version}}.tar.gz
           tag_name: ${{inputs.version}}
           body: ${{steps.changelog.outputs.changelog}}
-          token: ${{secrets.GITHUB_TOKEN}}
+          token: ${{secrets.GH_SECRET}}
