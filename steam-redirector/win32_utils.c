@@ -7,9 +7,9 @@
 
 void execute(const char_t* path, const char_t* arg) {
 	if (arg != NULL) {
-		_wexecl(path, path, arg, NULL);
+		_wexecl(path, "app", arg, NULL);
 	} else {
-		_wexecl(path, path, NULL);
+		_wexecl(path, "app", NULL);
 	}
 }
 
