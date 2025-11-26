@@ -1,6 +1,12 @@
 name: build-release
 
 on:
+
+  pull_request:
+  push:
+    tags:
+      - '*'
+
   workflow_dispatch:
     inputs:
       version:
@@ -27,42 +33,19 @@ jobs:
         run: |
           chmod +x ./pack-release.sh
           ./pack-release.sh "${VERSION}"
-      
-      - name: Get Previous Tag
-        id: previous_tag
-        run: |
-          tag=$(gh release list --limit 1 | grep -v 'Latest' | awk '{print $1}')
-          echo "::set-output name=tag::${tag}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
-      - name: Create Release Tag
-        id: create_tag
-        uses: actions/github-script@v8.0.0
+      - name: Upload package
+        uses: actions/upload-artifact@v4
         with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{inputs.version}}',
-              sha: context.sha
-            })
-
-      - name: Write Changelog
-        id: changelog
-        uses: mikepenz/release-changelog-builder-action@v6.0.1
-        with:
-          configuration: ".github/build-changelog.json"
-          fromTag: ${{steps.previous_tag.outputs.tag}}
-          toTag: ${{inputs.version}}
-        env:
-          GITHUB_TOKEN: ${{secrets.GH_SECRET}}
+          name: Release ${{inputs.version}}
+          path: mo2installer-${{inputs.version}}.tar.gz
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Create Release
-        id: release
         uses: softprops/action-gh-release@v2.4.2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: mo2installer-${{inputs.version}}.tar.gz
-          tag_name: ${{inputs.version}}
-          body: ${{steps.changelog.outputs.changelog}}
-          token: ${{secrets.GH_SECRET}}
+          name: Release ${{ github.ref_name }}
+          files: mo2installer-${{ github.ref_name }}.tar.gz
+          tag_name: ${{ github.ref_name }}
