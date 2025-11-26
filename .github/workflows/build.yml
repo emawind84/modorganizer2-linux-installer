@@ -22,6 +22,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5.0.1
 
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -29,7 +38,7 @@ jobs:
 
       - name: Compile (pack-release.sh)
         env:
-          VERSION: ${{inputs.version}}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           chmod +x ./pack-release.sh
           ./pack-release.sh "${VERSION}"
@@ -37,8 +46,8 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: Release ${{inputs.version}}
-          path: mo2installer-${{inputs.version}}.tar.gz
+          name: Release ${{ steps.version.outputs.version }}
+          path: mo2installer-${{ steps.version.outputs.version }}.tar.gz
           if-no-files-found: error
           retention-days: 30
 
